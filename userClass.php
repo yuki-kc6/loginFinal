@@ -20,9 +20,9 @@
     // DB接続＆PDO生成
 		try {
         $this->pdo = new PDO(DSN, DBUSER, DBPASS);
-    　} catch (PDOException $ex) {
-        die("DB接続エラー:" . $ex->getMessage());
-    　}
+		} catch (PDOException $ex) {
+		die("DB接続エラー:" . $ex->getMessage());
+		}
 	   $this->error=[];
 	}
 
