@@ -12,9 +12,9 @@
         $_SESSION['username'] = $username;
         header("Location:Mypage.php");
         exit;
-    }
+     }
+   }
 }
-
 $errors = $user->getErrors();
 
 
