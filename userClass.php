@@ -120,7 +120,7 @@
 		}
 	}catch(PDOException $ex){
 		die("Error:". $ex->getMessage());
-	　}
+	  }
 	}
 
   public function rememberToken($username){  
