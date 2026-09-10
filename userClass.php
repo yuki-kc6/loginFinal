@@ -5,9 +5,9 @@
 
 	private $error;//エラー内容
 
-  private $pdo;
+    private $pdo;
   
-	public function _construct(){//コンストラクタ
+	public function __construct(){//コンストラクタ
 
     //userClassでデータベースと接続しセッションを開始する
 		session_start();
@@ -17,18 +17,22 @@
 		define( "DBPASS", "ge3a" );
 
     // DB接続＆PDO生成
-		$pdo = new PDO( DSN, DBUSER, DBPASS );
+		try {
+        $this->pdo = new PDO(DSN, DBUSER, DBPASS);
+    　} catch (PDOException $ex) {
+        die("DB接続エラー:" . $ex->getMessage());
+    　}
 	}
 
-	public function _destruct(){//デストラクタ
+	public function __destruct(){//デストラクタ
 
 	}
 
-	public function login($name,$password){//ログイン機能
+	public function login($username,$password){//ログイン機能
 		try{
 			// プレースホルダは:user_account、:user_password
 			$sql = "SELECT user_password FROM user_tbl WHERE user_account = :user_account ";
-			$stmt = $pdo->prepare( $sql );	// 事前準備で解析・コンパイ
+			$stmt = this->$pdo->prepare( $sql );	// 事前準備で解析・コンパイ
 			$stmt->bindValue( ":user_account", $username );
 			$stmt->execute();	// 実行
 			
@@ -51,8 +55,10 @@
 		}
 	}
 
-	public function register($name,$password){//ユーザー登録機能
-  $username=trim($username);
+  public function register($username,$password){//ユーザー登録機能
+	try{
+	 $errors=[];											
+     $username=trim($username);
 
 	if(empty($username))	{
 		$errors[] =  "入力してください<br />";
@@ -82,32 +88,26 @@
 
 	if (count($errors) > 0) {
     		$num = count($errors);
-	}
-
-	else{
-	//DB接続&PDO生成
-	$pdo = new PDO(DSN,DBUSER,DBPASS);
+	}else{
 
 	$sqlcheck ="SELECT* FROM user_tbl WHERE user_account = :user_account" ;
 	
-	$stmt = $pdo->prepare($sqlcheck);
+	$stmt = this->$pdo->prepare($sqlcheck);
 
 	$stmt->bindValue(":user_account" , $username); //？の場合は、bindValue(1,$username)
 
 	$stmt->execute();
-
-
+		
 	$result = $stmt->fetchAll();
 		if( count($result) == 1 ){
 			$errors[]="使われたメールアドレスです<br />";
 		}
 		else{
-
 			$sqlreg ="INSERT INTO user_tbl(user_account,user_password)  VALUES(:user_account , :user_password)";
 
 			$passwordHash=password_hash($password,PASSWORD_DEFAULT);
 
-		 	$stmt = $pdo->prepare($sqlreg);//事前準備で解析・コンパイル
+		 	$stmt = this->$pdo->prepare($sqlreg);//事前準備で解析・コンパイル
 	
 			$stmt->bindValue(":user_account" , $username); //？の場合は、bindValue(1,$username)
 			$stmt->bindValue(":user_password" , $passwordHash); //？の場合は、bindValue(2,$username)
@@ -116,23 +116,21 @@
 				$_SESSION['username']=$username;
 				header("Location:Mypage.php");
 				exit;
-			}
+				}
 
+	  		}
 		}
-	}
 	}catch(PDOException $ex){
 		die("Error:". $ex->getMessage());
-	}
+	　}
 	}
 
   public function rememberToken($username){  
       try{
-
 			$sql="SELECT user_id FROM user_tbl WHERE user_account=:user_account";
-			$stmt=$pdo->prepare($sql);
+			$stmt=this->$pdo->prepare($sql);
 			$stmt->bindValue(":user_account",$username);
 			$stmt->execute();
-
 
 			$row=$stmt->fetch();
 			if ($row === false) {
@@ -162,7 +160,7 @@
 		}    
   }
 
-  public function tokenUser(){
+  public function tokenUser($token){
     try{
 			$sql="SELECT rt_user_id FROM remember_token_tbl WHERE rt_remember_token=:remember_token";
 			$stmt=$pdo->prepare($sql);
